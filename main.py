@@ -27,11 +27,11 @@ def main():
         "6. Mileage Prediction (SLR)"
     ])
 
+    # ---- HOME PAGE ----
     if page == "Home":
         st.title("Indian Car Market - Quick Look")
         st.write(f"We have **{len(df)}** cars from **{df['Brand'].nunique()}** brands in this dataset.")
 
-        # just checking if data has any missing stuff
         with st.expander("Data health check"):
             st.write("Null values per column:")
             st.write(df.isnull().sum())
@@ -57,13 +57,14 @@ def main():
             plt.title("Mileage spread")
             st.pyplot(fig)
 
-        # correlation heatmap - good to see which numbers relate
+        # wanted to see how the numerical columns correlate with each other
         st.subheader("Correlation heatmap")
         fig, ax = plt.subplots()
         num_cols = df.select_dtypes('number').drop(columns=['Car_ID'])
         sns.heatmap(num_cols.corr(), annot=True, cmap="coolwarm", ax=ax)
         st.pyplot(fig)
 
+    # ---- BRAND OVERVIEW ----
     elif page == "1. Brand Overview":
         st.header("Brand-wise numbers")
         st.write("Seeing which brands appear more and how their pricing looks.")
@@ -71,7 +72,8 @@ def main():
         brand_df = df.groupby('Brand').agg(
             avg_price=('Price', 'mean'),
             count=('Car_ID', 'count')
-        ).reset_index().sort_values('count', ascending=False)
+        ).reset_index()
+        brand_df = brand_df.sort_values('count', ascending=False)
 
         st.dataframe(brand_df)
 
@@ -81,14 +83,14 @@ def main():
         plt.title("How many listings per brand")
         st.pyplot(fig)
 
-        # chi2 to check if brand and fuel type are related
+        # chi square test - checking if theres a link between brand and fuel type
         ct = pd.crosstab(df['Brand'], df['Fuel_Type'])
-        chi2, p, _, _ = stats.chi2_contingency(ct)
-        st.write(f"Chi-square test (brand vs fuel type): p = {p:.4f}")
-        if p < 0.05:
+        chi2, pval, dof, expected = stats.chi2_contingency(ct)
+        st.write(f"Chi-square p-value: {pval:.4f}")
+        if pval < 0.05:
             st.write("Looks like brands do tend to prefer certain fuel types, which makes sense.")
         else:
-            st.write("No strong pattern here between brand and fuel.")
+            st.write("No strong pattern between brand and fuel.")
 
     elif page == "2. Model Breakdown":
         st.header("Models inside a brand")
@@ -107,33 +109,25 @@ def main():
             plt.title(f"{brand} model share")
             st.pyplot(fig)
 
-        # the distribution might be uneven for popular brands
-        if len(mc) > 1:
-            expected = np.full(len(mc), mc.mean())
-            chi2, p = stats.chisquare(mc.values, expected)
-            st.write(f"Chi-square goodness of fit: p = {p:.4f}")
-            if p < 0.05:
-                st.write("Sales seem concentrated on a few models here.")
-        else:
-            st.write("Only one model, nothing to compare.")
+
 
     elif page == "3. CC vs Mileage":
         st.header("Does engine size affect mileage?")
 
-        # removing electric cars, they dont have CC in the traditional sense
+        # electric cars dont have CC so removing them
         ice = df[df['Fuel_Type'] != 'Electric']
         st.write(f"Working with {len(ice)} non-electric cars.")
 
-        grouped = ice.groupby(['Engine_CC', 'Fuel_Type'], observed=False)['Mileage'].mean().reset_index()
+        grouped = ice.groupby(['Engine_CC','Fuel_Type'], observed=False)['Mileage'].mean().reset_index()
 
         fig = plt.figure(figsize=(10, 6))
         sns.lineplot(data=grouped, x='Engine_CC', y='Mileage', hue='Fuel_Type', marker='o')
         plt.title("Avg mileage by engine CC")
         st.pyplot(fig)
 
-        r, p = stats.pearsonr(ice['Engine_CC'], ice['Mileage'])
-        st.write(f"Pearson r = {r:.4f}, p = {p:.4e}")
-        # this seems expected - bigger engine usually means less mileage
+        r_val, p_val = stats.pearsonr(ice['Engine_CC'], ice['Mileage'])
+        st.write(f"Pearson correlation: r = {r_val:.4f}, p = {p_val:.4e}")
+        st.write("bigger engine usually means less mileage so this makes sense")
 
     elif page == "4. Service Costs":
         st.header("Service cost over the years")
@@ -143,17 +137,9 @@ def main():
         plt.title("Average service cost by year")
         st.pyplot(fig)
 
-        # quick z test for 2024 vs overall
-        cars_2024 = df[df['Year'] == 2024]['Service_Cost']
-        if len(cars_2024) > 0:
-            z = (cars_2024.mean() - df['Service_Cost'].mean()) / (df['Service_Cost'].std() / np.sqrt(len(cars_2024)))
-            st.write(f"Z score for 2024 costs: {z:.2f}")
-            if abs(z) > 1.96:
-                st.write("2024 service costs are noticeably different from the average.")
-            else:
-                st.write("2024 costs are pretty much in line with the rest.")
 
-        st.write("Boxplot to spot any outliers:")
+
+        st.write("Boxplot to spot any weird outliers:")
         fig = plt.figure()
         sns.boxplot(data=df, x='Year', y='Service_Cost')
         plt.xticks(rotation=45)
@@ -161,42 +147,46 @@ def main():
 
     elif page == "5. Value for Money":
         st.header("Value for Money ranking")
-        st.write("Formula: (Mileage / Price in lakhs) * (CC / 1000)")
-        st.write("Higher = better deal for what you pay.")
+        st.write("I made a simple formula: (Mileage / Price in lakhs) * (CC / 1000)")
+        st.write("Higher score = better deal for what you pay.")
 
         vdf = df.copy()
-        vdf['vfm'] = (vdf['Mileage'] / (vdf['Price'] / 100000)) * (vdf['Engine_CC'] / 1000)
+        vdf['vfm'] = (vdf['Mileage'] / (vdf['Price']/100000)) * (vdf['Engine_CC']/1000)
 
         st.write("Top 10:")
-        st.dataframe(vdf.nlargest(10, 'vfm')[['Brand', 'Model', 'Price', 'Mileage', 'Engine_CC', 'vfm']])
+        st.dataframe(vdf.nlargest(10, 'vfm')[['Brand','Model','Price','Mileage','Engine_CC','vfm']])
 
         fig = plt.figure()
         sns.boxplot(x=vdf['vfm'])
         plt.title("VFM score distribution")
         st.pyplot(fig)
 
-        # iqr based outlier check
+        # checking for outliers using IQR method
         q1 = vdf['vfm'].quantile(0.25)
         q3 = vdf['vfm'].quantile(0.75)
-        iqr = q3 - q1
-        outliers = vdf[(vdf['vfm'] < q1 - 1.5*iqr) | (vdf['vfm'] > q3 + 1.5*iqr)]
+        iqr_val = q3 - q1
+        lower = q1 - 1.5 * iqr_val
+        upper = q3 + 1.5 * iqr_val
+        outliers = vdf[(vdf['vfm'] < lower) | (vdf['vfm'] > upper)]
         st.write(f"Found {len(outliers)} outlier cars by IQR method.")
-        if len(outliers) > 0:
-            st.dataframe(outliers[['Brand', 'Model', 'vfm']])
+        if not outliers.empty:
+            st.dataframe(outliers[['Brand','Model','vfm']])
 
     elif page == "6. Mileage Prediction (SLR)":
         st.header("Simple Linear Regression - CC vs Mileage")
-        st.write("Trying to predict mileage based on engine cc using grouped averages.")
+        st.write("Trying to see if we can predict mileage from engine cc.")
+        st.write("Using grouped averages so the trend is cleaner.")
 
-        ice = df[df['Fuel_Type'] != 'Electric']
-        g = ice.groupby('Engine_CC')['Mileage'].mean().reset_index()
+        # same filter as before, no electric
+        ice_df = df[df['Fuel_Type'] != 'Electric']
+        g = ice_df.groupby('Engine_CC')['Mileage'].mean().reset_index()
 
-        slope, intercept, r, p, se = stats.linregress(g['Engine_CC'], g['Mileage'])
+        slope, intercept, r_val, p_val, std_err = stats.linregress(g['Engine_CC'], g['Mileage'])
 
         st.write(f"Equation: mileage = {slope:.5f} × CC + {intercept:.2f}")
-        st.write(f"r = {r:.4f}, p = {p:.4f}")
+        st.write(f"r value = {r_val:.4f}, p value = {p_val:.4f}")
 
-        # the slope is negative which means bigger cc = less mileage, makes sense
+        # negative slope means bigger cc = worse mileage
         fig = plt.figure(figsize=(9, 5))
         sns.regplot(x=g['Engine_CC'], y=g['Mileage'])
         plt.title("Regression: CC vs avg mileage")
@@ -206,8 +196,8 @@ def main():
 
         st.subheader("Try it yourself")
         cc_input = st.number_input("Enter a CC value", 800, 5000, 1200)
-        predicted = intercept + slope * cc_input
-        st.write(f"Predicted mileage for {cc_input}cc: **{predicted:.2f} kmpl**")
+        result = intercept + slope * cc_input
+        st.write(f"Predicted mileage for {cc_input}cc: **{result:.2f} kmpl**")
 
 if __name__ == "__main__":
     main()
