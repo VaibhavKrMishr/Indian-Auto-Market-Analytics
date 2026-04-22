@@ -16,7 +16,6 @@ venv/
 
 # User Specific
 structure.txt
-uv.lock
 generate_report.py
 Indian_Auto_Market_Report.docx
 report.md

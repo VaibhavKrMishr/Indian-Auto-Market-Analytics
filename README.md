@@ -1,47 +1,56 @@
 # Indian Auto Market Analytics 🚗📊
 
-This is my academic project for analyzing the Indian car market. I built an interactive dashboard using Python and Streamlit to explore a dataset of 10,000+ car listings.
+An interactive Business Intelligence dashboard for the Indian four-wheeler market. Built using **Python**, **Streamlit**, and **Statistical Modeling** techniques.
 
-## Project Description
+## 📌 Project Overview
 
-I wanted to see how different factors like engine size (CC) affect mileage and which brands offer the best value for money in India. The dashboard has 6 main parts ranging from simple brand breakdowns to a linear regression model for predicting fuel efficiency.
+This project provides a data-driven look into the Indian automobile industry. I analyzed a dataset of **10,000+ car listings** to identify market trends, engineering trade-offs, and consumer value propositions.
 
-## Key Features
+### 🔍 Key Analytical Modules
 
-- **EDA Home Page**: Data health check, basic distributions, and correlation heatmap.
-- **Brand & Model Analysis**: Breakdown of sales volume and model variety.
-- **Engine CC vs Mileage**: Visualizing the engineering trade-off.
-- **Service Costs**: Tracking maintenance trends from 2015 to 2024.
-- **Value for Money**: A custom ranking index I built to find the best deals.
-- **Mileage Prediction**: Simple Linear Regression tool to estimate kmpl from engine size.
+1. **Exploratory Data Analysis (EDA)**: A deep dive into data health, distribution of price/mileage, and feature correlations.
+2. **Brand & Model Dynamics**: Market share analysis and portfolio breakdown for 10 major manufacturers.
+3. **Engine CC vs Mileage**: Quantifying the relationship between engine displacement and fuel efficiency across different fuel types.
+4. **Maintenance Cost Tracking**: Analyzing service cost trends from 2015 to 2024 to identify which brands are most expensive to maintain.
+5. **Value for Money (VFM) Index**: A custom mathematical index I developed to rank cars by balancing performance, economy, and price.
+6. **Predictive Modeling (SLR)**: A Simple Linear Regression tool to estimate mileage based on engine size.
 
-## Dataset Info
+## 🛠️ Tech Stack
+
+- **Frontend**: Streamlit (Interactive Dashboard)
+- **Data Engineering**: Pandas, NumPy
+- **Visualizations**: Seaborn, Matplotlib
+- **Statistical Analysis**: SciPy (Linear Regression, Pearson Correlation, Chi-Square)
+
+## 📊 Dataset
 
 I used the **Indian Car Market Dataset** from Kaggle.
 - **Link**: [Kaggle Dataset](https://www.kaggle.com/datasets/ak0212/indian-car-market-dataset)
-- **Size**: 10,000 entries
-- **Details**: Covers 10 brands, 4 fuel types, and 10 years of data.
+- **Scope**: 10,000 entries across 10 top brands (Maruti, Hyundai, Tata, Honda, etc.)
 
 *Special thanks to Akshay Kumar for providing the dataset.*
 
-## How to Run
+## 🚀 How to Run
 
-1. Install requirements:
-   ```bash
-   pip install streamlit pandas numpy matplotlib seaborn scipy
-   ```
-2. Run the app:
-   ```bash
-   streamlit run streamlit_app.py
-   ```
+### The Modern Way (Recommended)
+If you have [uv](https://github.com/astral-sh/uv) installed:
+```bash
+uv sync
+uv run streamlit run streamlit_app.py
+```
 
-## Files in this Repo
+### Standard Pip Fallback
+```bash
+pip install streamlit pandas numpy matplotlib seaborn scipy
+streamlit run streamlit_app.py
+```
 
-- `main.py`: Core dashboard logic (Python/Streamlit).
-- `streamlit_app.py`: Entry point script.
-- `generate_report.py`: Script to generate the full academic report (`.docx`).
-- `report.md`: Technical documentation of the analysis.
-- `images/`: Original screenshots captured from the dashboard.
+## 📂 Repository Structure
+
+- `main.py`: The core logic for all 6 analytical modules and the UI.
+- `streamlit_app.py`: Minimal entry point to trigger the dashboard.
+- `images/`: Original screenshots captured from the live dashboard.
+- `data/`: The car market dataset (CSV).
 
 ---
-*Created as part of my Data Science portfolio.*
+*Created as part of my Data Science portfolio by Vaibhav Mishra.*
