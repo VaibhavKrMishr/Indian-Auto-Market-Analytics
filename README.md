@@ -14,10 +14,10 @@ This repository is an **Academic Project** developed as part of my Data Science 
 ---
 
 ## 📌 Project Overview
-"India-Moto-Insights" is a Business Intelligence toolkit designed to audit the Indian two-wheeler market. Using a dataset of **10,000+ entries**, it identifies pricing anomalies, depreciation trends, and market segmentation.
+"India-Moto-Insights" is a Business Intelligence toolkit designed to audit the Indian four-wheeler market. Using a dataset of **10,000+ entries**, it identifies pricing anomalies, depreciation trends, and market segmentation.
 
 ---
 
 ## DataSet
-link: https://www.kaggle.com/datasets/ak0212/indian-bike-sales-dataset
+link: 
 Thanks Akshay Kumar for the Dataset
