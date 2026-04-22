@@ -1,23 +1,47 @@
-# Indian-Auto-Market-Analytics
+# Indian Auto Market Analytics 🚗📊
 
+This is my academic project for analyzing the Indian car market. I built an interactive dashboard using Python and Streamlit to explore a dataset of 10,000+ car listings.
 
-## 🎓 Academic Context
-This repository is an **Academic Project** developed as part of my Data Science coursework. The objective was to apply the **Python Data Science Toolkit** to a real-world industry scenario, moving from raw data collection to statistical validation.
+## Project Description
 
-**Core Syllabus Competencies Applied:**
-* **Data Collection:** REST APIs, SQL Database integration, and Web Scraping.
-* **Data Manipulation:** Advanced cleaning and feature engineering using **Pandas** and **NumPy**.
-* **Exploratory Data Analysis (EDA):** Summary statistics and outlier detection.
-* **Statistical Analysis:** Hypothesis testing (t-tests, p-values), Normality tests (Shapiro-Wilk), and Multicollinearity (VIF).
-* **Data Visualization:** Storytelling through **Matplotlib** and **Seaborn**.
+I wanted to see how different factors like engine size (CC) affect mileage and which brands offer the best value for money in India. The dashboard has 6 main parts ranging from simple brand breakdowns to a linear regression model for predicting fuel efficiency.
+
+## Key Features
+
+- **EDA Home Page**: Data health check, basic distributions, and correlation heatmap.
+- **Brand & Model Analysis**: Breakdown of sales volume and model variety.
+- **Engine CC vs Mileage**: Visualizing the engineering trade-off.
+- **Service Costs**: Tracking maintenance trends from 2015 to 2024.
+- **Value for Money**: A custom ranking index I built to find the best deals.
+- **Mileage Prediction**: Simple Linear Regression tool to estimate kmpl from engine size.
+
+## Dataset Info
+
+I used the **Indian Car Market Dataset** from Kaggle.
+- **Link**: [Kaggle Dataset](https://www.kaggle.com/datasets/ak0212/indian-car-market-dataset)
+- **Size**: 10,000 entries
+- **Details**: Covers 10 brands, 4 fuel types, and 10 years of data.
+
+*Special thanks to Akshay Kumar for providing the dataset.*
+
+## How to Run
+
+1. Install requirements:
+   ```bash
+   pip install streamlit pandas numpy matplotlib seaborn scipy
+   ```
+2. Run the app:
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+
+## Files in this Repo
+
+- `main.py`: Core dashboard logic (Python/Streamlit).
+- `streamlit_app.py`: Entry point script.
+- `generate_report.py`: Script to generate the full academic report (`.docx`).
+- `report.md`: Technical documentation of the analysis.
+- `images/`: Original screenshots captured from the dashboard.
 
 ---
-
-## 📌 Project Overview
-"India-Moto-Insights" is a Business Intelligence toolkit designed to audit the Indian four-wheeler market. Using a dataset of **10,000+ entries**, it identifies pricing anomalies, depreciation trends, and market segmentation.
-
----
-
-## DataSet
-link: 
-Thanks Akshay Kumar for the Dataset
+*Created as part of my Data Science portfolio.*

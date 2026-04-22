@@ -1,1 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store
+
+# User Specific
 structure.txt
+uv.lock
+generate_report.py
+Indian_Auto_Market_Report.docx
+report.md
