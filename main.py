@@ -14,6 +14,7 @@ def load_data():
 def main():
     df = load_data()
 
+    st.sidebar.image("images/car.png")
     st.sidebar.title("Car Market Analysis")
     st.sidebar.write("Indian 4-Wheeler Dataset")
 
@@ -27,10 +28,9 @@ def main():
         "6. Mileage Prediction (SLR)"
     ])
 
-    # ---- HOME PAGE ----
     if page == "Home":
         st.title("Indian Car Market - Quick Look")
-        st.write(f"We have **{len(df)}** cars from **{df['Brand'].nunique()}** brands in this dataset.")
+        st.write("We have **" + str(len(df)) + "** cars from **" + str(df['Brand'].nunique()) + "** brands.")
 
         with st.expander("Data health check"):
             st.write("Null values per column:")
@@ -57,24 +57,18 @@ def main():
             plt.title("Mileage spread")
             st.pyplot(fig)
 
-        # wanted to see how the numerical columns correlate with each other
         st.subheader("Correlation heatmap")
         fig, ax = plt.subplots()
-        num_cols = df.select_dtypes('number').drop(columns=['Car_ID'])
-        sns.heatmap(num_cols.corr(), annot=True, cmap="coolwarm", ax=ax)
+        nums = df.select_dtypes('number').drop(columns=['Car_ID'])
+        sns.heatmap(nums.corr(), annot=True, cmap="coolwarm", ax=ax)
         st.pyplot(fig)
 
-    # ---- BRAND OVERVIEW ----
     elif page == "1. Brand Overview":
         st.header("Brand-wise numbers")
         st.write("Seeing which brands appear more and how their pricing looks.")
 
-        brand_df = df.groupby('Brand').agg(
-            avg_price=('Price', 'mean'),
-            count=('Car_ID', 'count')
-        ).reset_index()
+        brand_df = df.groupby('Brand').agg(avg_price=('Price','mean'), count=('Car_ID','count')).reset_index()
         brand_df = brand_df.sort_values('count', ascending=False)
-
         st.dataframe(brand_df)
 
         fig = plt.figure(figsize=(10, 5))
@@ -82,15 +76,6 @@ def main():
         plt.xticks(rotation=45)
         plt.title("How many listings per brand")
         st.pyplot(fig)
-
-        # chi square test - checking if theres a link between brand and fuel type
-        ct = pd.crosstab(df['Brand'], df['Fuel_Type'])
-        chi2, pval, dof, expected = stats.chi2_contingency(ct)
-        st.write(f"Chi-square p-value: {pval:.4f}")
-        if pval < 0.05:
-            st.write("Looks like brands do tend to prefer certain fuel types, which makes sense.")
-        else:
-            st.write("No strong pattern between brand and fuel.")
 
     elif page == "2. Model Breakdown":
         st.header("Models inside a brand")
@@ -101,37 +86,28 @@ def main():
 
         col1, col2 = st.columns(2)
         with col1:
-            st.write(f"**{brand}** has {len(mc)} models:")
+            st.write("**" + brand + "** has " + str(len(mc)) + " models:")
             st.dataframe(mc)
         with col2:
             fig, ax = plt.subplots()
             ax.pie(mc, labels=mc.index, autopct='%1.1f%%')
-            plt.title(f"{brand} model share")
+            plt.title(brand + " model share")
             st.pyplot(fig)
-
-
 
     elif page == "3. CC vs Mileage":
         st.header("Does engine size affect mileage?")
-
         # electric cars dont have CC so removing them
         ice = df[df['Fuel_Type'] != 'Electric']
-        st.write(f"Working with {len(ice)} non-electric cars.")
+        st.write("Working with " + str(len(ice)) + " non-electric cars.")
 
         grouped = ice.groupby(['Engine_CC','Fuel_Type'], observed=False)['Mileage'].mean().reset_index()
-
         fig = plt.figure(figsize=(10, 6))
         sns.lineplot(data=grouped, x='Engine_CC', y='Mileage', hue='Fuel_Type', marker='o')
         plt.title("Avg mileage by engine CC")
         st.pyplot(fig)
 
-        r_val, p_val = stats.pearsonr(ice['Engine_CC'], ice['Mileage'])
-        st.write(f"Pearson correlation: r = {r_val:.4f}, p = {p_val:.4e}")
-        st.write("bigger engine usually means less mileage so this makes sense")
-
     elif page == "4. Service Costs":
         st.header("Service cost over the years")
-
         fig = plt.figure(figsize=(10, 5))
         sns.lineplot(data=df, x='Year', y='Service_Cost', estimator='mean')
         plt.title("Average service cost by year")
@@ -139,10 +115,12 @@ def main():
 
 
 
-        st.write("Boxplot to spot any weird outliers:")
-        fig = plt.figure()
-        sns.boxplot(data=df, x='Year', y='Service_Cost')
-        plt.xticks(rotation=45)
+        st.subheader("Service cost trend by brand")
+        fig = plt.figure(figsize=(12,6))
+        sns.lineplot(data=df, x='Year', y='Service_Cost', hue='Brand', estimator='mean')
+        plt.title("Year-wise service cost per brand")
+        plt.legend(bbox_to_anchor=(1.05,1), loc='upper left', fontsize=8)
+        plt.tight_layout()
         st.pyplot(fig)
 
     elif page == "5. Value for Money":
@@ -153,51 +131,50 @@ def main():
         vdf = df.copy()
         vdf['vfm'] = (vdf['Mileage'] / (vdf['Price']/100000)) * (vdf['Engine_CC']/1000)
 
-        st.write("Top 10:")
-        st.dataframe(vdf.nlargest(10, 'vfm')[['Brand','Model','Price','Mileage','Engine_CC','vfm']])
+        top = vdf.nlargest(10,'vfm')[['Brand','Model','Price','Mileage','Engine_CC','vfm']]
+        st.dataframe(top)
 
-        fig = plt.figure()
-        sns.boxplot(x=vdf['vfm'])
-        plt.title("VFM score distribution")
+        st.subheader("Top 10 VFM Cars")
+        fig, ax = plt.subplots(figsize=(10,5))
+        names = top['Brand'] + ' ' + top['Model']
+        ax.barh(names, top['vfm'], color=sns.color_palette("viridis", len(top)))
+        ax.set_xlabel("VFM Score")
+        ax.invert_yaxis()
+        plt.tight_layout()
         st.pyplot(fig)
 
-        # checking for outliers using IQR method
-        q1 = vdf['vfm'].quantile(0.25)
-        q3 = vdf['vfm'].quantile(0.75)
-        iqr_val = q3 - q1
-        lower = q1 - 1.5 * iqr_val
-        upper = q3 + 1.5 * iqr_val
-        outliers = vdf[(vdf['vfm'] < lower) | (vdf['vfm'] > upper)]
-        st.write(f"Found {len(outliers)} outlier cars by IQR method.")
-        if not outliers.empty:
-            st.dataframe(outliers[['Brand','Model','vfm']])
+        st.subheader("Average VFM by Brand")
+        bv = vdf.groupby('Brand')['vfm'].mean().sort_values(ascending=False)
+        fig = plt.figure(figsize=(10,4))
+        bv.plot(kind='bar', color='teal')
+        plt.ylabel("Avg VFM Score")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        st.pyplot(fig)
 
     elif page == "6. Mileage Prediction (SLR)":
         st.header("Simple Linear Regression - CC vs Mileage")
-        st.write("Trying to see if we can predict mileage from engine cc.")
-        st.write("Using grouped averages so the trend is cleaner.")
 
-        # same filter as before, no electric
+        # same filter, no electric
         ice_df = df[df['Fuel_Type'] != 'Electric']
         g = ice_df.groupby('Engine_CC')['Mileage'].mean().reset_index()
 
         slope, intercept, r_val, p_val, std_err = stats.linregress(g['Engine_CC'], g['Mileage'])
 
-        st.write(f"Equation: mileage = {slope:.5f} × CC + {intercept:.2f}")
-        st.write(f"r value = {r_val:.4f}, p value = {p_val:.4f}")
-
-        # negative slope means bigger cc = worse mileage
-        fig = plt.figure(figsize=(9, 5))
-        sns.regplot(x=g['Engine_CC'], y=g['Mileage'])
-        plt.title("Regression: CC vs avg mileage")
-        plt.xlabel("Engine CC")
-        plt.ylabel("Avg Mileage (kmpl)")
-        st.pyplot(fig)
 
         st.subheader("Try it yourself")
         cc_input = st.number_input("Enter a CC value", 800, 5000, 1200)
         result = intercept + slope * cc_input
-        st.write(f"Predicted mileage for {cc_input}cc: **{result:.2f} kmpl**")
+        st.write("Predicted mileage for " + str(cc_input) + "cc: **" + str(round(result, 2)) + " kmpl**")
+
+        fig = plt.figure(figsize=(10, 6))
+        sns.regplot(x=g['Engine_CC'], y=g['Mileage'], ci=95, marker='o', scatter_kws={'s':80,'zorder':5})
+        plt.title("CC vs Average Mileage (with 95% confidence band)")
+        plt.xlabel("Engine CC")
+        plt.ylabel("Avg Mileage (kmpl)")
+        plt.grid(True, alpha=0.3)
+        st.pyplot(fig)
+
 
 if __name__ == "__main__":
     main()
